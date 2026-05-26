@@ -8,823 +8,313 @@
       name="description"
       content="A scroll-driven memorial to Alf Kumalo's Soweto 1976 photographs."
     />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@300;400&display=swap"
+      rel="stylesheet"
+    />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      html,
+      :root {
+        color-scheme: dark;
+      }
       body {
         margin: 0;
-        padding: 0;
         min-height: 100%;
-        background: #0a0908;
-        color: #ece6dc;
+        background: #090705;
+        color: #f3ede4;
+        font-family: 'Cormorant Garamond', Georgia, serif;
+        line-height: 1.7;
       }
-      body {
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      * {
+        box-sizing: border-box;
       }
-      #root {
-        min-height: 100vh;
+      .mono {
+        font-family: 'JetBrains Mono', Menlo, monospace;
       }
-      .text-scrim {
+      .section-bg {
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+      .glass-panel {
+        backdrop-filter: blur(20px);
+        background: rgba(10, 9, 8, 0.72);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+      }
+      .progress-bar {
+        position: fixed;
+        inset: 0 0 auto 0;
+        height: 3px;
+        background: linear-gradient(90deg, #b82b2b, #ff8f6c);
+        transform-origin: left center;
+        transform: scaleX(0);
+        z-index: 60;
+      }
+      .hero-overlay {
         position: absolute;
         inset: 0;
-        pointer-events: none;
-        background: linear-gradient(
-          to top,
-          rgba(10, 9, 8, 0.92) 0%,
-          rgba(10, 9, 8, 0.78) 28%,
-          rgba(10, 9, 8, 0.45) 55%,
-          rgba(10, 9, 8, 0.10) 80%,
-          transparent 100%
-        );
+        background: radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.08), transparent 25%),
+          linear-gradient(180deg, rgba(10, 9, 8, 0.15), rgba(10, 9, 8, 0.95));
       }
-      .memorial-heading {
-        color: #f5f1ea;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65), 0 2px 14px rgba(0, 0, 0, 0.55);
-        font-feature-settings: "kern" 1, "liga" 1;
-      }
-      .memorial-body {
-        color: #ece6dc;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
-        font-feature-settings: "kern" 1, "liga" 1, "onum" 1;
-        font-weight: 400;
-      }
-      .memorial-caption {
-        color: rgba(214, 207, 196, 0.92);
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
-        font-feature-settings: "kern" 1;
-      }
-      .memorial-eyebrow {
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-      }
-      .scroll-anchor {
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
+      .section-fade {
+        background: linear-gradient(180deg, rgba(10, 9, 8, 0.72), rgba(10, 9, 8, 0.92));
       }
     </style>
   </head>
-  <body>
-    <div id="root"></div>
-    <script type="module">
-      import React, { useEffect, useRef, useState, useMemo } from 'https://esm.sh/react@18.2.0';
-      import ReactDOM from 'https://esm.sh/react-dom@18.2.0/client';
-      import {
-        motion,
-        useScroll,
-        useTransform,
-        useSpring,
-        useMotionValue,
-      } from 'https://esm.sh/framer-motion@11.0.0?bundle';
+  <body class="antialiased selection:bg-[#a11616]/30 selection:text-white">
+    <div class="progress-bar" id="progress"></div>
 
-      const img01 = './images/01_march.jpg';
-      const img02 = './images/02_bus.jpg';
-      const img03 = './images/03_scatter.jpg';
-      const img04 = './images/04_runner.jpg';
-      const img05 = './images/05_khwezi.jpg';
-      const img06 = './images/06_moroka.jpg';
-      const img07 = './images/07_mzimhlope.jpg';
-      const img08 = './images/08_buses.jpg';
-      const img09 = './images/09_grave.jpg';
-      const img10 = './images/10_exile.jpg';
-      const img11 = './images/11_kumalo.jpg';
-      const img12 = './images/12_cape_times.jpg';
-
-      const JOURNEY = [
-        {
-          id: 'morris-isaacson',
-          place: 'Morris Isaacson High',
-          coord: 'Mofolo South',
-          image: img01,
-          title: 'The march begins',
-          body: 'On the morning of 16 June 1976, students poured out of Morris Isaacson, Naledi, Phefeni and a dozen other schools. They walked in their thousands toward Orlando Stadium, raising placards against the imposition of Afrikaans as the language of instruction. They were children. The youngest were ten.',
-          caption: 'Students on the march to Orlando Stadium, June 1976.',
-          tone: 'rise',
-        },
-        {
-          id: 'phefeni',
-          place: 'Phefeni Junior Secondary',
-          coord: 'Orlando West',
-          image: img02,
-          title: 'Destroy Bantu Education',
-          body: 'The placards were hand-cut from cardboard. The slogans were written in marker, in chalk, in pen. Bantu Education was the law that designed Black schools to produce labourers — Hendrik Verwoerd had said so himself. The children of Soweto refused to inherit it.',
-          caption: 'Children of Soweto with a placard reading "Destroy Bantu Education".',
-          tone: 'rise',
-        },
-        {
-          id: 'vilakazi',
-          place: 'Vilakazi Street',
-          coord: 'Orlando West',
-          image: img03,
-          title: 'The first volleys',
-          body: 'The police arrived. They threw teargas first. Then they fired into the crowd. Adult activists ran with the children — labourers, mothers, neighbours, everyone who had heard the shots. Soweto was not a place that ran from its own.',
-          caption: 'Residents scatter as teargas permeates the air near Mzimhlope Hostel.',
-          tone: 'break',
-        },
-        {
-          id: 'teargas',
-          place: 'between the houses',
-          coord: 'Orlando West',
-          image: img04,
-          title: 'Through the smoke',
-          body: 'Alf Kumalo carried his cameras through it. As a Black photographer, he could not be everywhere the white press could; he could also be in places they could not. He hid film canisters in his socks. He kept walking.',
-          caption: 'A Soweto resident runs from the toxic smell of teargas, 1976.',
-          tone: 'breath',
-        },
-        {
-          id: 'khwezi',
-          place: 'Khwezi Station',
-          coord: 'Soweto',
-          image: img05,
-          title: 'The township answers',
-          body: 'By afternoon the smoke could be seen from Johannesburg. Beerhalls burned. Government buildings burned. The dead were being counted, and the count was wrong — the official toll was a fraction of the real one. Across Soweto, sixteen burned through into seventeen, and the fires were still alight.',
-          caption: 'Children look on as Khwezi Station, Soweto, goes up in smoke.',
-          tone: 'fire',
-          layout: 'portrait',
-        },
-        {
-          id: 'moroka',
-          place: 'Moroka Police Station',
-          coord: 'Soweto',
-          image: img06,
-          title: 'Night, and the trucks burning',
-          body: 'A delivery truck blackened next to the police station. A single soldier in camouflage watching it burn. Kumalo composed the frame the way he composed all of them — with patience, even in chaos. He believed the photograph had to outlive the night.',
-          caption: 'A burning truck next to Moroka Police Station conveys the mood of the era.',
-          tone: 'fire',
-        },
-        {
-          id: 'cape-times',
-          place: 'The morning after',
-          coord: 'Cape Town, 18 June 1976',
-          image: img12,
-          title: 'And the world reads',
-          body: 'Two days on, the Cape Times went to press. Twenty-one buildings destroyed by fire. Latest official toll: twenty-nine dead, two hundred and twenty-four injured. The real numbers would not be known for years. The minister of police told Parliament that the death toll had risen. The stock market, the paper noted on its lower fold, was taking the riots calmly. The page is not a Kumalo photograph. It is what his photographs had, by then, made impossible to ignore.',
-          caption: 'The Cape Times, Friday 18 June 1976 — "Soweto violence spreads".',
-          credit: 'Independent Newspapers Archive',
-          tone: 'press',
-          layout: 'press',
-        },
-        {
-          id: 'mzimhlope',
-          place: 'Mzimhlope',
-          coord: 'days later',
-          image: img07,
-          title: 'What followed',
-          body: 'Kumalo took this photograph from the rear window of a car. The Sunday Times’ own drivers had refused to enter Soweto — “it was too dangerous,” he said. The orders to the police were to "shoot and kill anyone, even photographers." The image was never published in his lifetime by the Times. An editor told the BBC he had been "unlucky" — that he didn’t get any good pictures. He had this one.',
-          caption: 'Dead lie before an army vehicle near Mzimhlope, days after June 16. Photographed by Alf Kumalo from the rear window of a car.',
-          tone: 'still',
-        },
-        {
-          id: 'buses',
-          place: 'the road to the funerals',
-          coord: 'Soweto, late 1976',
-          image: img08,
-          title: 'They climbed on the roofs',
-          body: 'After June, the youth filled every bus to every funeral. They sat on the roofs. They hung from the doors. The state had killed their schoolmates and the answer was not silence — the answer was visibility, mass, presence, song. The struggle had a new generation now and it had decided.',
-          caption: 'Students hanging from buses on the way to funerals and demonstrations, late 1970s.',
-          tone: 'rise',
-        },
-        {
-          id: 'avalon',
-          place: 'Avalon Cemetery',
-          coord: 'Soweto',
-          image: img09,
-          title: 'Zolile Hector Pieterson',
-          body: 'August 19, 1963 — June 16, 1976. Twelve years old. Kumalo returned to the grave often. He photographed this woman — herself wounded in the uprising, herself in a wheelchair — laying flowers. The headstone reads: deeply mourned by his parents, sisters, and a nation that remembers.',
-          caption: 'A woman injured during the Soweto uprising pays respect at the grave of Hector Pieterson.',
-          tone: 'still',
-        },
-        {
-          id: 'botswana',
-          place: 'Botswana',
-          coord: 'in exile',
-          image: img10,
-          title: 'Wanted, dead or alive',
-          body: 'Tsietsi Mashinini and Khotso Seathlholo led the Soweto Students’ Representative Council. The state put up posters for them — dead or alive. They crossed the border. Kumalo found them in Botswana and made this photograph: two boys, fists raised, laughing. They were nineteen and eighteen. Neither would live a long life.',
-          caption: 'Tsietsi Mashinini and Khotso Seathlholo, student leaders, share a light-hearted moment in exile in Botswana.',
-          tone: 'rise',
-          layout: 'portrait',
-        },
-      ];
-
-      function EmberCanvas() {
-        const ref = useRef(null);
-        const intensity = useRef(0.4);
-
-        useEffect(() => {
-          const onScroll = () => {
-            const max = document.documentElement.scrollHeight - window.innerHeight;
-            const p = max > 0 ? Math.min(1, window.scrollY / max) : 0;
-            intensity.current = 0.35 + Math.sin(p * Math.PI) * 0.65;
-          };
-          window.addEventListener('scroll', onScroll, { passive: true });
-          onScroll();
-          return () => window.removeEventListener('scroll', onScroll);
-        }, []);
-
-        useEffect(() => {
-          const canvas = ref.current;
-          if (!canvas) return;
-          const ctx = canvas.getContext('2d');
-          let w = (canvas.width = window.innerWidth);
-          let h = (canvas.height = window.innerHeight);
-          let raf;
-          const particles = [];
-          const TARGET = 140;
-
-          const spawn = (initial = false) => ({
-            x: Math.random() * w,
-            y: initial ? Math.random() * h : -10,
-            vx: (Math.random() - 0.5) * 0.3,
-            vy: 0.25 + Math.random() * 0.7,
-            size: 0.6 + Math.random() * 1.8,
-            sway: Math.random() * Math.PI * 2,
-            swaySpeed: 0.005 + Math.random() * 0.015,
-            opacity: 0.25 + Math.random() * 0.55,
-            warm: Math.random() > 0.82,
-          });
-
-          for (let i = 0; i < TARGET; i += 1) particles.push(spawn(true));
-
-          const resize = () => {
-            w = canvas.width = window.innerWidth;
-            h = canvas.height = window.innerHeight;
-          };
-          window.addEventListener('resize', resize);
-
-          const tick = () => {
-            ctx.clearRect(0, 0, w, h);
-            const desired = Math.floor(TARGET * intensity.current);
-            if (particles.length < desired && Math.random() < 0.4) particles.push(spawn());
-            for (let i = particles.length - 1; i >= 0; i -= 1) {
-              const p = particles[i];
-              p.sway += p.swaySpeed;
-              p.x += p.vx + Math.sin(p.sway) * 0.35;
-              p.y += p.vy;
-              if (p.y > h + 5 || p.x < -10 || p.x > w + 10) {
-                if (particles.length > desired) {
-                  particles.splice(i, 1);
-                  continue;
-                }
-                Object.assign(p, spawn());
-                continue;
-              }
-              ctx.beginPath();
-              ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-              ctx.fillStyle = p.warm
-                ? `rgba(220, 130, 90, ${p.opacity * 0.8})`
-                : `rgba(230, 222, 210, ${p.opacity})`;
-              ctx.fill();
-            }
-            raf = requestAnimationFrame(tick);
-          };
-          tick();
-          return () => {
-            cancelAnimationFrame(raf);
-            window.removeEventListener('resize', resize);
-          };
-        }, []);
-
-        return (
-          <canvas
-            ref={ref}
-            aria-hidden="true"
-            className="fixed inset-0 pointer-events-none z-[5]"
-            style={{ mixBlendMode: 'screen' }}
-          />
-        );
-      }
-
-      function FilmGrain() {
-        const grainSvg =
-          "data:image/svg+xml;utf8," +
-          encodeURIComponent(
-            "<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.7'/></svg>"
-          );
-        return (
-          <div
-            aria-hidden="true"
-            className="fixed inset-0 pointer-events-none z-[6] opacity-[0.10] mix-blend-overlay"
-            style={{ backgroundImage: `url("${grainSvg}")`, backgroundSize: '240px 240px' }}
-          />
-        );
-      }
-
-      function ScrollProgress() {
-        const { scrollYProgress } = useScroll();
-        const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 30 });
-        return (
-          <motion.div
-            style={{ scaleX, transformOrigin: '0% 50%' }}
-            className="fixed top-0 left-0 right-0 h-[2px] bg-[#a11616] z-[50]"
-          />
-        );
-      }
-
-      function RouteIndicator() {
-        const [activeIndex, setActiveIndex] = useState(0);
-
-        useEffect(() => {
-          let raf = 0;
-          const measure = () => {
-            const els = JOURNEY.map((s) => document.querySelector(`[data-stop="${s.id}"]`));
-            const centre = window.scrollY + window.innerHeight / 2;
-            let best = 0;
-            let bestDist = Infinity;
-            els.forEach((el, i) => {
-              if (!el) return;
-              const top = el.offsetTop;
-              const bottom = top + el.offsetHeight;
-              const mid = (top + bottom) / 2;
-              const dist = Math.abs(centre - mid);
-              const inside = centre >= top && centre <= bottom;
-              const score = inside ? dist - 100000 : dist;
-              if (score < bestDist) {
-                bestDist = score;
-                best = i;
-              }
-            });
-            setActiveIndex(best);
-          };
-
-          const onScroll = () => {
-            if (raf) return;
-            raf = requestAnimationFrame(() => {
-              raf = 0;
-              measure();
-            });
-          };
-
-          measure();
-          window.addEventListener('scroll', onScroll, { passive: true });
-          window.addEventListener('resize', measure);
-          const t = setTimeout(measure, 250);
-          return () => {
-            window.removeEventListener('scroll', onScroll);
-            window.removeEventListener('resize', measure);
-            clearTimeout(t);
-            if (raf) cancelAnimationFrame(raf);
-          };
-        }, []);
-
-        return (
-          <div className="fixed right-6 top-1/2 -translate-y-1/2 z-30 hidden md:flex flex-col items-end gap-3">
-            {JOURNEY.map((stop, i) => (
-              <div key={stop.id} className="flex items-center gap-3 group">
-                <span
-                  className={`text-[10px] tracking-[0.18em] uppercase transition-all duration-500 ${
-                    i === activeIndex
-                      ? 'text-stone-200 opacity-100 translate-x-0'
-                      : 'text-stone-500 opacity-0 group-hover:opacity-70 translate-x-2'
-                  }`}
-                  style={{ fontFamily: 'var(--font-mono)' }}
-                >
-                  {stop.place}
-                </span>
-                <span
-                  className={`block rounded-full transition-all duration-500 ${
-                    i === activeIndex
-                      ? 'w-3 h-3 bg-[#a11616]'
-                      : i < activeIndex
-                      ? 'w-2 h-2 bg-stone-400'
-                      : 'w-2 h-2 bg-stone-700'
-                  }`}
-                />
-              </div>
-            ))}
+    <main class="relative overflow-hidden">
+      <section
+        class="relative min-h-screen section-bg flex items-end"
+        style="background-image: url('images/01_march.jpg');"
+      >
+        <div class="hero-overlay"></div>
+        <div class="relative z-10 w-full px-6 py-16 md:px-16 md:py-24 max-w-5xl mx-auto">
+          <div class="mb-6 flex items-center gap-3 text-sm uppercase tracking-[0.35em] text-[#e3b1ab] mono">
+            <span class="inline-block h-px w-12 bg-[#a11616]"></span>
+            16 June 1976
           </div>
-        );
-      }
-
-      function Hero() {
-        const ref = useRef(null);
-        const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
-        const y = useTransform(scrollYProgress, [0, 1], [0, 150]);
-        const opacity = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
-        const scale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
-
-        return (
-          <section ref={ref} className="relative min-h-[100svh] flex flex-col justify-end overflow-hidden">
-            <motion.div style={{ scale }} className="absolute inset-0 z-0">
-              <div
-                className="absolute inset-0"
-                style={{
-                  background: 'radial-gradient(ellipse at 50% 35%, rgba(60,40,30,0.55) 0%, rgba(0,0,0,0.95) 70%)',
-                }}
-              />
-              <div
-                className="absolute inset-0 opacity-30"
-                style={{
-                  backgroundImage: `url(${img01})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  filter: 'grayscale(1) contrast(1.1) brightness(0.5)',
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-stone-950" />
-            </motion.div>
-
-            <motion.div style={{ y, opacity }} className="relative z-10 px-6 md:px-16 pb-20 md:pb-32 max-w-5xl">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1.4, ease: 'easeOut' }}
-                className="flex items-center gap-4 mb-8"
-              >
-                <span className="block h-px w-12 bg-[#a11616]" />
-                <span className="text-[#a11616] text-sm tracking-[0.35em] uppercase" style={{ fontFamily: 'var(--font-mono)' }}>
-                  16 June 1976
-                </span>
-              </motion.div>
-
-              <motion.h1
-                initial={{ opacity: 0, y: 40, filter: 'blur(20px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
-                className="text-stone-100 leading-[0.92]"
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 'clamp(3rem, 9vw, 8rem)',
-                  fontWeight: 400,
-                  letterSpacing: '-0.02em',
-                }}
-              >
-                <span className="block italic font-light text-stone-400">Soweto,</span>
-                <span className="block">in the eye of Alf Kumalo</span>
-              </motion.h1>
-
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1.4, delay: 1.1 }}
-                className="memorial-body mt-10 max-w-2xl text-lg md:text-xl leading-relaxed"
-              >
-                A walk along the route the students took on the morning of the uprising — told through the photographs of a man who refused to look away.
-              </motion.p>
-
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1.6, delay: 1.8 }}
-                className="memorial-eyebrow mt-16 flex items-center gap-3 text-stone-300/90 text-xs tracking-[0.2em] uppercase"
-                style={{ fontFamily: 'var(--font-mono)' }}
-              >
-                <span>Scroll to walk with them</span>
-                <motion.span
-                  animate={{ y: [0, 6, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                  className="block w-px h-8 bg-stone-500/60"
-                />
-              </motion.div>
-            </motion.div>
-          </section>
-        );
-      }
-
-      function JourneyStop({ stop, index }) {
-        const ref = useRef(null);
-        const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-
-        const isStill = stop.tone === 'still';
-        const isPortrait = stop.layout === 'portrait';
-        const isPress = stop.layout === 'press';
-
-        const scale = useTransform(scrollYProgress, [0, 1], isStill ? [1.04, 1.10] : isPortrait ? [1.06, 1.12] : [1.09, 1.20]);
-        const imgY = useTransform(scrollYProgress, [0, 1], ['4%', '-14%']);
-        const imgX = useTransform(scrollYProgress, [0, 1], isStill ? ['0%', '0%'] : index % 2 === 0 ? ['-2%', '2%'] : ['2%', '-2%']);
-        const imgBlur = useTransform(scrollYProgress, [0, 0.25, 0.75, 1], [10, 0, 0, 6]);
-        const imgFilter = useTransform(imgBlur, (b) => `grayscale(1) contrast(1.06) brightness(0.85) blur(${b}px)`);
-        const textY = useTransform(scrollYProgress, [0, 1], ['12%', '-8%']);
-        const textOpacity = useTransform(scrollYProgress, [0.15, 0.32, 0.78, 0.95], [0, 1, 1, 0.3]);
-        const breath = useMotionValue(0);
-
-        useEffect(() => {
-          let raf;
-          const t0 = performance.now();
-          const loop = (t) => {
-            const elapsed = (t - t0) / 1000;
-            breath.set((Math.sin((elapsed / 7.5) * Math.PI * 2) + 1) / 2);
-            raf = requestAnimationFrame(loop);
-          };
-          raf = requestAnimationFrame(loop);
-          return () => cancelAnimationFrame(raf);
-        }, [breath]);
-
-        const breathScale = useTransform(breath, [0, 1], [1, isStill ? 1.008 : 1.018]);
-        const vignetteOpacity = useTransform(breath, [0, 1], [0.85, 1]);
-        const accent = isStill ? 'text-stone-500' : 'text-[#a11616]';
-
-        if (isPress) {
-          const tilt = useTransform(scrollYProgress, [0, 1], [-2.5, 2]);
-          return (
-            <section ref={ref} data-stop={stop.id} className="relative min-h-[200vh] flex">
-              <div
-                className="sticky top-0 h-screen w-full overflow-hidden flex items-center"
-                style={{
-                  background: 'radial-gradient(ellipse at 50% 60%, #1a1612 0%, #0a0908 65%, #050403 100%)',
-                }}
-              >
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 opacity-[0.08]"
-                  style={{
-                    backgroundImage:
-                      "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='p'><feTurbulence baseFrequency='0.04' numOctaves='3'/><feColorMatrix values='0 0 0 0 1   0 0 0 0 0.95   0 0 0 0 0.85   0 0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(%23p)'/></svg>\")',
-                  }}
-                />
-                <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-16 grid md:grid-cols-12 gap-8 md:gap-16 items-center">
-                  <motion.div className="md:col-span-6 md:order-2 relative" style={{ y: imgY, scale: breathScale, rotate: tilt }}>
-                    <div className="relative mx-auto" style={{ maxWidth: 'min(460px, 78vw)', aspectRatio: '645 / 850' }}>
-                      <div className="absolute -inset-3 bg-black/60 blur-xl rounded-sm" aria-hidden="true" />
-                      <div className="absolute -inset-1 bg-black/40 blur-md" aria-hidden="true" />
-                      <motion.img
-                        src={stop.image}
-                        alt={stop.caption}
-                        className="relative w-full h-full object-cover z-10"
-                        style={{
-                          filter: 'sepia(0.18) contrast(1.05) brightness(0.96) saturate(0.85)',
-                          boxShadow: '0 30px 60px -20px rgba(0,0,0,0.9), 0 0 0 1px rgba(80,70,55,0.25)',
-                        }}
-                        loading="lazy"
-                      />
-                      <div
-                        aria-hidden="true"
-                        className="absolute inset-0 z-20 pointer-events-none"
-                        style={{
-                          background:
-                            'radial-gradient(ellipse at center, transparent 55%, rgba(20,15,10,0.35) 100%)',
-                        }}
-                      />
-                    </div>
-                    <div className="mt-4 text-center memorial-caption text-[11px] tracking-[0.18em] uppercase" style={{ fontFamily: 'var(--font-mono)' }}>
-                      {stop.credit || 'archive'}
-                    </div>
-                  </motion.div>
-                  <motion.div className="md:col-span-6 md:order-1" style={{ y: textY, opacity: textOpacity }}>
-                    <div className="flex items-center gap-3 mb-5">
-                      <span className={`block h-px w-8 bg-current ${accent}`} />
-                      <span
-                        className={`memorial-eyebrow text-[11px] tracking-[0.32em] uppercase ${accent}`}
-                        style={{ fontFamily: 'var(--font-mono)' }}
-                      >
-                        {String(index + 1).padStart(2, '0')} — {stop.coord}
-                      </span>
-                    </div>
-                    <h2
-                      className="memorial-heading mb-6 leading-[1]"
-                      style={{
-                        fontFamily: 'var(--font-serif)',
-                        fontSize: 'clamp(2rem, 4.8vw, 4rem)',
-                        fontWeight: 400,
-                        letterSpacing: '-0.015em',
-                      }}
-                    >
-                      <span
-                        className="block mb-2 text-stone-300/95 memorial-eyebrow"
-                        style={{
-                          fontFamily: 'var(--font-mono)',
-                          letterSpacing: '0.2em',
-                          textTransform: 'uppercase',
-                          fontSize: '0.28em',
-                        }}
-                      >
-                        {stop.place}
-                      </span>
-                      {stop.title}
-                    </h2>
-                    <p className="memorial-body text-[1.06rem] md:text-[1.18rem] leading-[1.68] max-w-xl">
-                      {stop.body}
-                    </p>
-                    <p className="memorial-caption mt-8 text-[13px] md:text-sm italic max-w-xl" style={{ fontFamily: 'var(--font-serif)' }}>
-                      {stop.caption}
-                    </p>
-                  </motion.div>
-                </div>
-              </div>
-            </section>
-          );
-        }
-
-        if (isPortrait) {
-          const side = index % 2 === 0 ? 'left' : 'right';
-          return (
-            <section ref={ref} data-stop={stop.id} className="relative min-h-[200vh] flex">
-              <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center">
-                <motion.div aria-hidden="true" style={{ scale: breathScale }} className="absolute inset-0">
-                  <img
-                    src={stop.image}
-                    alt=""
-                    className="w-full h-full object-cover"
-                    style={{ filter: 'grayscale(1) brightness(0.35) blur(40px) contrast(1.2)', transform: 'scale(1.15)' }}
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-black/55" />
-                </motion.div>
-                <motion.div aria-hidden="true" style={{ opacity: vignetteOpacity }} className="absolute inset-0">
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      background:
-                        'radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.55) 75%, rgba(0,0,0,0.92) 100%)',
-                    }}
-                  />
-                </motion.div>
-                <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-16 grid md:grid-cols-12 gap-8 md:gap-16 items-center">
-                  <motion.div
-                    className={`${side === 'left' ? 'md:col-span-5 md:order-1' : 'md:col-span-5 md:order-2'} relative`}
-                    style={{ y: imgY, scale: useTransform([scale, breathScale], ([s, b]) => s * b) }}
-                  >
-                    <div className="relative mx-auto" style={{ maxWidth: 'min(420px, 80vw)', aspectRatio: '3 / 4' }}>
-                      <motion.img
-                        src={stop.image}
-                        alt={stop.caption}
-                        className="w-full h-full object-cover relative z-10"
-                        style={{ filter: imgFilter }}
-                        loading="lazy"
-                      />
-                      <div className="absolute inset-0 ring-1 ring-stone-300/15 z-20 pointer-events-none" />
-                      <div
-                        className="absolute -inset-2 -z-0 opacity-60 blur-2xl"
-                        style={{ background: 'radial-gradient(circle, rgba(220,130,90,0.25), transparent 70%)' }}
-                      />
-                    </div>
-                  </motion.div>
-                  <motion.div className={`${side === 'left' ? 'md:col-span-7 md:order-2' : 'md:col-span-7 md:order-1'}`} style={{ y: textY, opacity: textOpacity }}>
-                    <div className="flex items-center gap-3 mb-5">
-                      <span className={`block h-px w-8 bg-current ${accent}`} />
-                      <span className={`memorial-eyebrow text-[11px] tracking-[0.32em] uppercase ${accent}`} style={{ fontFamily: 'var(--font-mono)' }}>
-                        {String(index + 1).padStart(2, '0')} — {stop.coord}
-                      </span>
-                    </div>
-                    <h2 className="memorial-heading mb-6 leading-[1]" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(2rem, 4.8vw, 4rem)', fontWeight: 400, letterSpacing: '-0.015em' }}>
-                      <span className="block mb-2 text-stone-300/95 memorial-eyebrow" style={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.2em', textTransform: 'uppercase', fontSize: '0.28em' }}>
-                        {stop.place}
-                      </span>
-                      {stop.title}
-                    </h2>
-                    <p className="memorial-body text-[1.06rem] md:text-[1.18rem] leading-[1.68] max-w-xl">{stop.body}</p>
-                    <p className="memorial-caption mt-8 text-[13px] md:text-sm italic max-w-xl" style={{ fontFamily: 'var(--font-serif)' }}>
-                      {stop.caption} — <span className="not-italic" style={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.1em' }}>photo: Alf Kumalo</span>
-                    </p>
-                  </motion.div>
-                </div>
-              </div>
-            </section>
-          );
-        }
-
-        return (
-          <section ref={ref} data-stop={stop.id} className="relative min-h-[200vh] flex">
-            <div className="sticky top-0 h-screen w-full overflow-hidden">
-              <motion.div
-                style={{
-                  scale: useTransform([scale, breathScale], ([s, b]) => s * b),
-                  y: imgY,
-                  x: imgX,
-                }}
-                className="absolute inset-0"
-              >
-                <motion.img src={stop.image} alt={stop.caption} className="w-full h-full object-cover" style={{ filter: imgFilter }} loading="lazy" />
-              </motion.div>
-              <motion.div aria-hidden="true" style={{ opacity: vignetteOpacity }} className="absolute inset-0">
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background:
-                      'radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.55) 75%, rgba(0,0,0,0.92) 100%)',
-                  }}
-                />
-              </motion.div>
-              <div aria-hidden className="text-scrim" />
-              <motion.div style={{ opacity: textOpacity, y: textY }} className="absolute inset-0 flex items-end">
-                <div className="px-6 md:px-16 pb-20 md:pb-28 max-w-4xl">
-                  <div className="flex items-center gap-3 mb-5">
-                    <span className={`block h-px w-8 bg-current ${accent}`} />
-                    <span className={`memorial-eyebrow text-[11px] tracking-[0.32em] uppercase ${accent}`} style={{ fontFamily: 'var(--font-mono)' }}>
-                      {String(index + 1).padStart(2, '0')} — {stop.coord}
-                    </span>
-                  </div>
-                  <h2 className="memorial-heading mb-6 leading-[1]" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(2.25rem, 5.5vw, 4.75rem)', fontWeight: 400, letterSpacing: '-0.015em' }}>
-                    <span className="block mb-2 text-stone-300/95 memorial-eyebrow" style={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.2em', textTransform: 'uppercase', fontSize: '0.28em' }}>
-                      {stop.place}
-                    </span>
-                    {stop.title}
-                  </h2>
-                  <p className="memorial-body text-[1.06rem] md:text-[1.18rem] leading-[1.68] max-w-2xl">{stop.body}</p>
-                  <p className="memorial-caption mt-8 text-[13px] md:text-sm italic max-w-2xl" style={{ fontFamily: 'var(--font-serif)' }}>
-                    {stop.caption} — <span className="not-italic" style={{ fontFamily: 'var(--font-mono)', letterSpacing: '0.1em' }}>photo: Alf Kumalo</span>
-                  </p>
-                </div>
-              </motion.div>
-            </div>
-          </section>
-        );
-      }
-
-      function Tribute() {
-        const ref = useRef(null);
-        const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-        const y = useTransform(scrollYProgress, [0, 1], [80, -80]);
-        const imgScale = useTransform(scrollYProgress, [0, 1], [1.05, 1.15]);
-
-        return (
-          <section ref={ref} className="relative bg-stone-950 py-24 md:py-40 overflow-hidden">
-            <div className="max-w-7xl mx-auto px-6 md:px-16 grid md:grid-cols-12 gap-12 md:gap-20 items-start">
-              <motion.div style={{ y }} className="md:col-span-5 relative">
-                <div className="relative aspect-[2/3] overflow-hidden bg-stone-900">
-                  <motion.img
-                    style={{ scale: imgScale }}
-                    src={img11}
-                    alt="Alf Kumalo with Muhammad Ali"
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 ring-1 ring-stone-700/40" />
-                </div>
-                <div className="mt-4 text-xs text-stone-500 tracking-[0.18em] uppercase" style={{ fontFamily: 'var(--font-mono)' }}>
-                  Alf Kumalo (centre) with Muhammad Ali
-                </div>
-              </motion.div>
-              <div className="md:col-span-7 md:pt-16">
-                <div className="flex items-center gap-3 mb-8">
-                  <span className="block h-px w-12 bg-[#a11616]" />
-                  <span className="text-[#a11616] text-xs tracking-[0.32em] uppercase" style={{ fontFamily: 'var(--font-mono)' }}>
-                    A photographer's life
-                  </span>
-                </div>
-                <h2 className="text-stone-100 mb-10 leading-[0.98]" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(2.5rem, 6vw, 5.5rem)', fontWeight: 400, letterSpacing: '-0.02em' }}>
-                  <span className="block italic text-stone-400 font-light">For</span>
-                  Alf Kumalo
-                  <span className="block text-stone-500 text-[0.4em] mt-4 italic font-light">1930 — 2012</span>
-                </h2>
-                <div className="space-y-6 text-[1.06rem] md:text-[1.18rem] leading-[1.75] max-w-2xl" style={{ color: '#ece6dc', fontFeatureSettings: '"kern" 1, "liga" 1, "onum" 1' }}>
-                  <p>Kumalo became famous for his coverage of the resistance to apartheid that swept South Africa, and especially Soweto, where he lived for most of his life.</p>
-                  <p>He described how he would sometimes take a single shot on a roll of film before hiding the canister in his socks — or elsewhere on his body — to protect it from the police. He risked his life to ensure that the story would be told. Sometimes the censors won; the pictures sat in drawers for decades. Sometimes they reached the world. Either way, he kept the negatives.</p>
-                  <p>He photographed Mandela, Ali, Tutu, Sisulu. He photographed boys with cardboard placards. He photographed his own neighbours fleeing the only place they had to go. There is a way of seeing that does not flinch and does not perform — that is patient, dignified, and unblinking. That is what Kumalo had.</p>
-                  <p className="italic" style={{ fontFamily: 'var(--font-serif)', color: '#c9c2b6' }}>These eleven photographs are not all that he made of 1976. They are a beginning.</p>
-                </div>
-              </div>
-            </div>
-          </section>
-        );
-      }
-
-      function Closing() {
-        return (
-          <footer className="relative bg-black py-32 px-6 md:px-16 overflow-hidden">
-            <div className="max-w-3xl mx-auto text-center">
-              <div className="flex justify-center mb-10">
-                <span className="block h-px w-20 bg-[#a11616]" />
-              </div>
-              <p className="leading-[1.5] mb-12" style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(1.5rem, 3.5vw, 2.5rem)', fontWeight: 300, fontStyle: 'italic', color: '#ece6dc' }}>
-                "I went to the office the following day and listened to one of the editors telling BBC guys that I was unlucky and I didn't get any good pictures."
-              </p>
-              <div className="text-stone-400 text-xs tracking-[0.3em] uppercase" style={{ fontFamily: 'var(--font-mono)' }}>
-                — Alf Kumalo
-              </div>
-              <div className="mt-24 text-stone-500 text-[11px] tracking-[0.25em] uppercase space-y-2" style={{ fontFamily: 'var(--font-mono)' }}>
-                <div>Photographs: Alf Kumalo</div>
-                <div>50 years on — 16 June 2026</div>
-                <div>In memory of the children of Soweto</div>
-              </div>
-            </div>
-          </footer>
-        );
-      }
-
-      function SowetoMemorial() {
-        useEffect(() => {
-          const id = 'soweto-memorial-fonts';
-          if (document.getElementById(id)) return;
-          const link = document.createElement('link');
-          link.id = id;
-          link.rel = 'stylesheet';
-          link.href = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=JetBrains+Mono:wght@300;400&display=swap';
-          document.head.appendChild(link);
-
-          const style = document.createElement('style');
-          style.id = 'soweto-memorial-vars';
-          style.textContent = `:root { --font-serif: 'Cormorant Garamond', 'Garamond', 'Times New Roman', serif; --font-mono: 'JetBrains Mono', 'Menlo', monospace; } html { scroll-behavior: smooth; } body { background: #0a0908; }`;
-          document.head.appendChild(style);
-        }, []);
-
-        return (
-          <div className="relative bg-stone-950 text-stone-100 antialiased selection:bg-[#a11616]/40 selection:text-stone-50">
-            <ScrollProgress />
-            <EmberCanvas />
-            <FilmGrain />
-            <RouteIndicator />
-            <Hero />
-            {JOURNEY.map((stop, i) => (
-              <JourneyStop key={stop.id} stop={stop} index={i} />
-            ))}
-            <Tribute />
-            <Closing />
+          <h1 class="text-[clamp(3rem,9vw,7rem)] leading-[0.9] font-light tracking-tight max-w-4xl">
+            <span class="block italic text-stone-300">Soweto,</span>
+            in the eye of Alf Kumalo
+          </h1>
+          <p class="mt-10 max-w-2xl text-lg text-stone-200/90">
+            A quiet memorial in eleven photographs. Scroll to move through the route of the students who walked for language, dignity and freedom.
+          </p>
+          <div class="mt-14 flex items-center gap-3 text-xs uppercase tracking-[0.28em] text-stone-300 mono">
+            <span>Scroll to walk with them</span>
+            <span class="inline-block h-8 w-px bg-stone-500/60"></span>
           </div>
-        );
-      }
+        </div>
+      </section>
 
-      const root = ReactDOM.createRoot(document.getElementById('root'));
-      root.render(React.createElement(SowetoMemorial));
+      <section class="relative min-h-[120vh] section-bg section-fade flex items-center" style="background-image: url('images/02_bus.jpg');">
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div class="relative z-10 mx-auto px-6 py-20 md:px-16 max-w-6xl">
+          <div class="glass-panel p-8 md:p-12 rounded-3xl border border-white/5 shadow-2xl shadow-black/50">
+            <div class="flex items-center gap-3 mb-5">
+              <span class="inline-block h-px w-10 bg-[#a11616]"></span>
+              <div class="uppercase tracking-[0.3em] text-xs text-stone-300 mono">Phefeni Junior Secondary — Orlando West</div>
+            </div>
+            <h2 class="text-4xl md:text-5xl leading-tight font-normal text-white mb-6">
+              Destroy Bantu Education
+            </h2>
+            <p class="text-lg md:text-xl text-stone-200/90 leading-relaxed">
+              The placards were hand-cut from cardboard. The slogans were written in marker, in chalk, in pen. Bantu Education was the law that designed Black schools to produce labourers — Hendrik Verwoerd had said so himself. The children of Soweto refused to inherit it.
+            </p>
+            <p class="mt-8 text-sm italic text-stone-300">Children of Soweto with a placard reading "Destroy Bantu Education".</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="relative min-h-[120vh] section-bg section-fade flex items-center" style="background-image: url('images/03_scatter.jpg');">
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div class="relative z-10 mx-auto px-6 py-20 md:px-16 max-w-6xl">
+          <div class="glass-panel p-8 md:p-12 rounded-3xl border border-white/5 shadow-2xl shadow-black/50">
+            <div class="flex items-center gap-3 mb-5">
+              <span class="inline-block h-px w-10 bg-[#a11616]"></span>
+              <div class="uppercase tracking-[0.3em] text-xs text-stone-300 mono">Vilakazi Street — Orlando West</div>
+            </div>
+            <h2 class="text-4xl md:text-5xl leading-tight font-normal text-white mb-6">
+              The first volleys
+            </h2>
+            <p class="text-lg md:text-xl text-stone-200/90 leading-relaxed">
+              The police arrived. They threw teargas first. Then they fired into the crowd. Adult activists ran with the children — labourers, mothers, neighbours, everyone who had heard the shots. Soweto was not a place that ran from its own.
+            </p>
+            <p class="mt-8 text-sm italic text-stone-300">Residents scatter as teargas permeates the air near Mzimhlope Hostel.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="relative min-h-[120vh] section-bg section-fade flex items-center" style="background-image: url('images/04_runner.jpg');">
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div class="relative z-10 mx-auto px-6 py-20 md:px-16 max-w-6xl">
+          <div class="glass-panel p-8 md:p-12 rounded-3xl border border-white/5 shadow-2xl shadow-black/50">
+            <div class="flex items-center gap-3 mb-5">
+              <span class="inline-block h-px w-10 bg-[#a11616]"></span>
+              <div class="uppercase tracking-[0.3em] text-xs text-stone-300 mono">Between the houses — Orlando West</div>
+            </div>
+            <h2 class="text-4xl md:text-5xl leading-tight font-normal text-white mb-6">
+              Through the smoke
+            </h2>
+            <p class="text-lg md:text-xl text-stone-200/90 leading-relaxed">
+              Alf Kumalo carried his cameras through it. As a Black photographer, he could not be everywhere the white press could; he could also be in places they could not. He hid film canisters in his socks. He kept walking.
+            </p>
+            <p class="mt-8 text-sm italic text-stone-300">A Soweto resident runs from the toxic smell of teargas, 1976.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="relative min-h-[120vh] section-bg section-fade flex items-center" style="background-image: url('images/05_khwezi.jpg');">
+        <div class="absolute inset-0 bg-black/48"></div>
+        <div class="relative z-10 mx-auto px-6 py-20 md:px-16 max-w-6xl">
+          <div class="glass-panel p-8 md:p-12 rounded-3xl border border-white/5 shadow-2xl shadow-black/50">
+            <div class="flex items-center gap-3 mb-5">
+              <span class="inline-block h-px w-10 bg-[#a11616]"></span>
+              <div class="uppercase tracking-[0.3em] text-xs text-stone-300 mono">Khwezi Station — Soweto</div>
+            </div>
+            <h2 class="text-4xl md:text-5xl leading-tight font-normal text-white mb-6">
+              The township answers
+            </h2>
+            <p class="text-lg md:text-xl text-stone-200/90 leading-relaxed">
+              By afternoon the smoke could be seen from Johannesburg. Beerhalls burned. Government buildings burned. The dead were being counted, and the count was wrong — the official toll was a fraction of the real one. Across Soweto, sixteen burned through into seventeen, and the fires were still alight.
+            </p>
+            <p class="mt-8 text-sm italic text-stone-300">Children look on as Khwezi Station, Soweto, goes up in smoke.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="relative min-h-[120vh] section-bg section-fade flex items-center" style="background-image: url('images/06_moroka.jpg');">
+        <div class="absolute inset-0 bg-black/48"></div>
+        <div class="relative z-10 mx-auto px-6 py-20 md:px-16 max-w-6xl">
+          <div class="glass-panel p-8 md:p-12 rounded-3xl border border-white/5 shadow-2xl shadow-black/50">
+            <div class="flex items-center gap-3 mb-5">
+              <span class="inline-block h-px w-10 bg-[#a11616]"></span>
+              <div class="uppercase tracking-[0.3em] text-xs text-stone-300 mono">Moroka Police Station — Soweto</div>
+            </div>
+            <h2 class="text-4xl md:text-5xl leading-tight font-normal text-white mb-6">
+              Night, and the trucks burning
+            </h2>
+            <p class="text-lg md:text-xl text-stone-200/90 leading-relaxed">
+              A delivery truck blackened next to the police station. A single soldier in camouflage watching it burn. Kumalo composed the frame the way he composed all of them — with patience, even in chaos. He believed the photograph had to outlive the night.
+            </p>
+            <p class="mt-8 text-sm italic text-stone-300">A burning truck next to Moroka Police Station conveys the mood of the era.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="relative min-h-[120vh] section-bg section-fade flex items-center" style="background-image: url('images/12_cape_times.jpg');">
+        <div class="absolute inset-0 bg-black/48"></div>
+        <div class="relative z-10 mx-auto px-6 py-20 md:px-16 max-w-6xl">
+          <div class="glass-panel p-8 md:p-12 rounded-3xl border border-white/5 shadow-2xl shadow-black/50">
+            <div class="flex items-center gap-3 mb-5">
+              <span class="inline-block h-px w-10 bg-[#a11616]"></span>
+              <div class="uppercase tracking-[0.3em] text-xs text-stone-300 mono">The morning after — Cape Town</div>
+            </div>
+            <h2 class="text-4xl md:text-5xl leading-tight font-normal text-white mb-6">
+              And the world reads
+            </h2>
+            <p class="text-lg md:text-xl text-stone-200/90 leading-relaxed">
+              Two days on, the Cape Times went to press. Twenty-one buildings destroyed by fire. Latest official toll: twenty-nine dead, two hundred and twenty-four injured. The real numbers would not be known for years.
+            </p>
+            <p class="mt-8 text-sm italic text-stone-300">The Cape Times, Friday 18 June 1976 — "Soweto violence spreads".</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="relative min-h-[120vh] section-bg section-fade flex items-center" style="background-image: url('images/07_mzimhlope.jpg');">
+        <div class="absolute inset-0 bg-black/48"></div>
+        <div class="relative z-10 mx-auto px-6 py-20 md:px-16 max-w-6xl">
+          <div class="glass-panel p-8 md:p-12 rounded-3xl border border-white/5 shadow-2xl shadow-black/50">
+            <div class="flex items-center gap-3 mb-5">
+              <span class="inline-block h-px w-10 bg-[#a11616]"></span>
+              <div class="uppercase tracking-[0.3em] text-xs text-stone-300 mono">Mzimhlope — days later</div>
+            </div>
+            <h2 class="text-4xl md:text-5xl leading-tight font-normal text-white mb-6">
+              What followed
+            </h2>
+            <p class="text-lg md:text-xl text-stone-200/90 leading-relaxed">
+              Kumalo took this photograph from the rear window of a car. The Sunday Times’ own drivers had refused to enter Soweto — “it was too dangerous,” he said. The orders to the police were to "shoot and kill anyone, even photographers." The image was never published in his lifetime by the Times.
+            </p>
+            <p class="mt-8 text-sm italic text-stone-300">Dead lie before an army vehicle near Mzimhlope, days after June 16.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="relative min-h-[120vh] section-bg section-fade flex items-center" style="background-image: url('images/08_buses.jpg');">
+        <div class="absolute inset-0 bg-black/48"></div>
+        <div class="relative z-10 mx-auto px-6 py-20 md:px-16 max-w-6xl">
+          <div class="glass-panel p-8 md:p-12 rounded-3xl border border-white/5 shadow-2xl shadow-black/50">
+            <div class="flex items-center gap-3 mb-5">
+              <span class="inline-block h-px w-10 bg-[#a11616]"></span>
+              <div class="uppercase tracking-[0.3em] text-xs text-stone-300 mono">The road to the funerals — Soweto</div>
+            </div>
+            <h2 class="text-4xl md:text-5xl leading-tight font-normal text-white mb-6">
+              They climbed on the roofs
+            </h2>
+            <p class="text-lg md:text-xl text-stone-200/90 leading-relaxed">
+              After June, the youth filled every bus to every funeral. They sat on the roofs. They hung from the doors. The state had killed their schoolmates and the answer was not silence — the answer was visibility, mass, presence, song.
+            </p>
+            <p class="mt-8 text-sm italic text-stone-300">Students hanging from buses on the way to funerals and demonstrations, late 1970s.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="relative min-h-[120vh] section-bg section-fade flex items-center" style="background-image: url('images/09_grave.jpg');">
+        <div class="absolute inset-0 bg-black/48"></div>
+        <div class="relative z-10 mx-auto px-6 py-20 md:px-16 max-w-6xl">
+          <div class="glass-panel p-8 md:p-12 rounded-3xl border border-white/5 shadow-2xl shadow-black/50">
+            <div class="flex items-center gap-3 mb-5">
+              <span class="inline-block h-px w-10 bg-[#a11616]"></span>
+              <div class="uppercase tracking-[0.3em] text-xs text-stone-300 mono">Avalon Cemetery — Soweto</div>
+            </div>
+            <h2 class="text-4xl md:text-5xl leading-tight font-normal text-white mb-6">
+              Zolile Hector Pieterson
+            </h2>
+            <p class="text-lg md:text-xl text-stone-200/90 leading-relaxed">
+              August 19, 1963 — June 16, 1976. Twelve years old. Kumalo returned to the grave often. He photographed this woman — herself wounded in the uprising, herself in a wheelchair — laying flowers.
+            </p>
+            <p class="mt-8 text-sm italic text-stone-300">A woman injured during the Soweto uprising pays respect at the grave of Hector Pieterson.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="relative min-h-[120vh] section-bg section-fade flex items-center" style="background-image: url('images/10_exile.jpg');">
+        <div class="absolute inset-0 bg-black/48"></div>
+        <div class="relative z-10 mx-auto px-6 py-20 md:px-16 max-w-6xl">
+          <div class="glass-panel p-8 md:p-12 rounded-3xl border border-white/5 shadow-2xl shadow-black/50">
+            <div class="flex items-center gap-3 mb-5">
+              <span class="inline-block h-px w-10 bg-[#a11616]"></span>
+              <div class="uppercase tracking-[0.3em] text-xs text-stone-300 mono">Botswana — in exile</div>
+            </div>
+            <h2 class="text-4xl md:text-5xl leading-tight font-normal text-white mb-6">
+              Wanted, dead or alive
+            </h2>
+            <p class="text-lg md:text-xl text-stone-200/90 leading-relaxed">
+              Tsietsi Mashinini and Khotso Seathlholo led the Soweto Students’ Representative Council. The state put up posters for them — dead or alive. They crossed the border. Kumalo found them in Botswana and made this photograph.
+            </p>
+            <p class="mt-8 text-sm italic text-stone-300">Tsietsi Mashinini and Khotso Seathlholo, student leaders, share a light-hearted moment in exile in Botswana.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="relative bg-black py-28 md:py-40">
+        <div class="max-w-6xl mx-auto px-6 md:px-16 text-center">
+          <div class="inline-flex items-center gap-3 mb-8 text-xs uppercase tracking-[0.28em] text-[#a11616] mono">
+            <span class="inline-block h-px w-12 bg-[#a11616]"></span>
+            For Alf Kumalo
+          </div>
+          <h2 class="text-5xl md:text-6xl font-light text-white leading-[0.95] mb-8">
+            He did not look away.
+          </h2>
+          <p class="mx-auto max-w-3xl text-lg text-stone-300/90 leading-relaxed">
+            He photographed Mandela, Ali, Tutu, Sisulu — and the children of Soweto. He hid film canisters in his socks and kept walking into the danger.
+          </p>
+          <p class="mt-10 text-sm uppercase tracking-[0.25em] text-stone-400 mono">1930 — 2012</p>
+        </div>
+      </section>
+
+      <footer class="bg-[#050403] py-24 px-6 md:px-16">
+        <div class="max-w-4xl mx-auto text-center text-stone-400 space-y-4 text-sm">
+          <p>Photographs: Alf Kumalo</p>
+          <p>50 years on — 16 June 2026</p>
+          <p>In memory of the children of Soweto</p>
+        </div>
+      </footer>
+    </main>
+
+    <script>
+      const progress = document.getElementById('progress');
+      window.addEventListener('scroll', () => {
+        const doc = document.documentElement;
+        const scroll = doc.scrollTop || document.body.scrollTop;
+        const height = doc.scrollHeight - window.innerHeight;
+        const ratio = height > 0 ? scroll / height : 0;
+        progress.style.transform = `scaleX(${Math.min(1, Math.max(0, ratio))})`;
+      });
     </script>
   </body>
 </html>
