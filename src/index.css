@@ -2,38 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: dark;
-}
-
-html {
-  scroll-behavior: smooth;
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  background: #0a0908;
 }
 
 body {
-  margin: 0;
-  min-height: 100vh;
-  background: #090705;
-  color: #f3ede4;
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  line-height: 1.7;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-::selection {
-  background: rgba(161, 22, 22, 0.2);
-  color: #fff;
-}
-
-.mono {
-  font-family: 'JetBrains Mono', Menlo, monospace;
-}
-
-canvas,
-body,
-html {
-  width: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
